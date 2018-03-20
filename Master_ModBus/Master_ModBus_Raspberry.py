@@ -3,11 +3,12 @@ import minimalmodbus
 import MySQLdb
 import time
 minimalmodbus.BAUDRATE = 19200 #initialisation du baudrate
+minimalmodbus.TIMEOUT = 1.5
 
 instrument = minimalmodbus.Instrument('/dev/ttyUSB0', 1) # Nom du port, adresse de l'esclave 
 
 while True:
-    # Register number, number of decimals, function code
+    #Register number, number of decimals, function code
     #temperature = instrument.read_register(1, 2, 4)
     #print "Temperature: ", temperature
     
