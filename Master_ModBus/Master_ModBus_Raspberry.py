@@ -1,19 +1,17 @@
 #!/usr/bin/env python
 import minimalmodbus
-import time
 import MySQLdb
-import datetime
-
+import time
 minimalmodbus.BAUDRATE = 19200 #initialisation du baudrate
 
 instrument = minimalmodbus.Instrument('/dev/ttyUSB0', 1) # Nom du port, adresse de l'esclave 
 
 while True:
     # Register number, number of decimals, function code
-    temperature = instrument.read_register(1, 2, 4)
-    print "Temperature: ", temperature
-    time.sleep(1)
-    debit = instrument.read_register(2, 2, 4)
+    #temperature = instrument.read_register(1, 2, 4)
+    #print "Temperature: ", temperature
+    
+    debit = instrument.read_register(0, 0, 4)
     print "Debit:", debit
     time.sleep(1)
 
@@ -23,7 +21,7 @@ while True:
     cursor = db.cursor()
     #Query SQL
     sql = ("""INSERT INTO capteur(capt_temp, capt_debit) VALUES (%s, %s)""") 
-    data = (temperature, debit)
+    data = (5, debit)
     print "ok"
     try:
         #Execution de la query
