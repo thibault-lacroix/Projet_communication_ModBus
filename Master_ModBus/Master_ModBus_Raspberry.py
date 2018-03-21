@@ -14,7 +14,7 @@ while True:
     time.sleep(1)
     
     debit = instrument.read_register(0, 0)
-    print "Débit:", debit
+    print "Débit: ", debit
     time.sleep(1)
 
     db = MySQLdb.connect("localhost","root","btsir123","ormeaux") # Query de connexion
@@ -35,4 +35,4 @@ while True:
         print "Erreur"
     db.close() # Fermeture de la connexion avec la base de donnees
     print "Déconnexion de la db"
-    time.sleep(2)
+    time.sleep(290)
