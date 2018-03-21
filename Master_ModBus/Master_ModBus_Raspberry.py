@@ -9,33 +9,30 @@ instrument = minimalmodbus.Instrument('/dev/ttyUSB0', 1) # Nom du port, adresse 
 
 while True:
     #Register number, number of decimals, function code
-    #temperature = instrument.read_register(1, 2, 4)
-    #print "Temperature: ", temperature
+    temperature = instrument.read_register(1, 2, 4)
+    print "Temperature: ", temperature
+    time.sleep(1)
     
     debit = instrument.read_register(0, 0, 4)
     print "Debit:", debit
     time.sleep(1)
 
-    #Query de connexion
-    db = MySQLdb.connect("localhost","root","btsir123","ormeaux") 
+    db = MySQLdb.connect("localhost","root","btsir123","ormeaux") #Query de connexion
 
     cursor = db.cursor()
-    #Query SQL
-    sql = ("""INSERT INTO capteur(capt_temp, capt_debit) VALUES (%s, %s)""") 
-    data = (5, debit)
+    
+    sql = ("""INSERT INTO capteur(capt_temp, capt_debit) VALUES (%s, %s)""") #Query SQL
+    data = (temperature, debit)
     print "ok"
     try:
-        #Execution de la query
-        cursor.execute(sql, data) 
+        cursor.execute(sql, data) #Execution de la query
         print "test"
         db.commit() 
         print "commit"
 
     except:
-        #en cas d'erreur
-        db.rollback() 
+        db.rollback() #en cas d'erreur
         print "erreur"
-    #fermeture de la connexion avec la base de donnees
-    db.close()
+    db.close() #fermeture de la connexion avec la base de donnees
     print "deconnecte"
-    time.sleep(10)
+    time.sleep(1)
