@@ -5,7 +5,7 @@ import MySQLdb
 import time
 
 minimalmodbus.BAUDRATE = 19200 # Initialisation du baudrate
-minimalmodbus.TIMEOUT = 5
+minimalmodbus.TIMEOUT = 60
 
 instrument = minimalmodbus.Instrument('/dev/ttyUSB0', 1) # Nom du port, adresse de l'esclave 
 
@@ -16,6 +16,10 @@ while True:
     
     debit = instrument.read_register(0, 0)
     print "Débit: ", debit
+    time.sleep(1)
+
+    e_vanne = instrument.read(2,0)
+    print "Etat de la vanne: ", e_vanne
     time.sleep(1)
 
     db = MySQLdb.connect("localhost","root","btsir123","ormeaux") # Query de connexion
@@ -38,4 +42,4 @@ while True:
     print "Déconnexion de la db"
     print "--------------------"
     print "                    "
-    time.sleep(292)
+    time.sleep(10)
