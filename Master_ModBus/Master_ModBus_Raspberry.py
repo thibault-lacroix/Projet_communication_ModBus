@@ -3,6 +3,7 @@
 import minimalmodbus
 import MySQLdb
 import time
+
 minimalmodbus.BAUDRATE = 19200 # Initialisation du baudrate
 minimalmodbus.TIMEOUT = 5
 
@@ -35,4 +36,6 @@ while True:
         print "Erreur"
     db.close() # Fermeture de la connexion avec la base de donnees
     print "Déconnexion de la db"
-    time.sleep(290)
+    print "--------------------"
+    print "                    "
+    time.sleep(292)
