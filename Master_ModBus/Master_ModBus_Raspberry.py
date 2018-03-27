@@ -18,15 +18,15 @@ while True:
     print "Débit: ", debit
     time.sleep(1)
 
-    e_vanne = instrument.read(2,0)
-    print "Etat de la vanne: ", e_vanne
-    time.sleep(1)
+#    e_vanne = instrument.read(2,0)
+#    print "Etat de la vanne: ", e_vanne
+#    time.sleep(1)
 
     db = MySQLdb.connect("localhost","root","btsir123","ormeaux") # Query de connexion
 
     cursor = db.cursor()
     
-    sql = ("""INSERT INTO capteur(capt_temp, capt_debit) VALUES (%s, %s)""") # Query SQL
+    sql = ("""INSERT INTO bassin1(capt_temp, capt_debit) VALUES (%s, %s)""") # Query SQL
     data = (temperature, debit)
     print "Query ok"
     try:

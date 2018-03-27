@@ -100,14 +100,10 @@ void setup() {
 }
 
 void loop() {
-  
-  
   digitalWrite(vanne,HIGH);
-  delay(tpsvanne);
-  
+  delay(tpsvanne); 
   digitalWrite(vanne,LOW);
   delay(tpsvanne);
-  
   float temperature;
   /* Lit la température ambiante à ~1Hz */
   if (getTemperature(&temperature, true) != READ_OK) {
