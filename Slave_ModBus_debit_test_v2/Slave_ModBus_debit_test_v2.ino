@@ -89,35 +89,35 @@ void rpm () //This is the function that the interupt calls
                  or any pin number > 1 for RS-485
 */
 Modbus slave(1, 1, 5); // this is slave @1 and RS-232 or USB-FTDI
-const int vanne= 8; //broche
-const int tpsvanne=5000;
+const int vanne = 8; //broche
+const int tpsvanne = 5000;
 
 void setup() {
-  slave.begin( 19200 ); // baud-rate at 19200
+  slave.begin(19200); // baud-rate at 19200
   pinMode(hallsensor, INPUT); //initializes digital pin 2 as an input
   attachInterrupt(0, rpm, RISING); //and the interrupt is attached
-  pinMode(vanne,OUTPUT);//la vanne en sortie
+  pinMode(vanne, OUTPUT); //la vanne en sortie
 }
 
 void loop() {
-  digitalWrite(vanne,HIGH);
-  delay(tpsvanne); 
-  digitalWrite(vanne,LOW);
+  digitalWrite(vanne, HIGH);
+  delay(tpsvanne);
+  digitalWrite(vanne, LOW);
   delay(tpsvanne);
   float temperature;
   /* Lit la température ambiante à ~1Hz */
   if (getTemperature(&temperature, true) != READ_OK) {
     return;
   }
-  temperature=temperature*100; //envoyer 4 chiffres au lieu de deux dans un int
-  
+  temperature = temperature * 100; //envoyer 4 chiffres au lieu de deux dans un int
+
   NbTopsFan = 0; //Set NbTops to 0 ready for calculations
   //sei(); //Enables interrupts
   delay (1000); //Wait 1 second
   //cli(); //Disable interrupts
   Calc = (NbTopsFan * 60 / 7.5); //(Pulse frequency x 60) / 7.5Q, = flow rate
 
-  uint16_t au16data[2] = {Calc,temperature};
+  uint16_t au16data[2] = {Calc, temperature};
 
   slave.poll( au16data, 2 );
 }
