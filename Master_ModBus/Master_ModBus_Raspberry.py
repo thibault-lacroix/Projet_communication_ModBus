@@ -8,7 +8,7 @@ minimalmodbus.BAUDRATE = 19200 # Initialisation du baudrate
 minimalmodbus.TIMEOUT = 60
 slave_addr = 1
 
-instrument = minimalmodbus.Instrument('/dev/ttyUSB0', slave_addr) # Nom du port, adresse de l'esclave 
+instrument = minimalmodbus.Instrument('/dev/ttyUSB0', slave_addr) # Nom du port, adresse de l'esclave
 
 while True:
 
@@ -22,20 +22,25 @@ while True:
     print "Débit: ", debit
     time.sleep(1)
 
-#    e_vanne = instrument.read(2,0)
-#    print "Etat de la vanne: ", e_vanne
-#    time.sleep(1)
-
     db = MySQLdb.connect("localhost","root","btsir123","ormeaux") # Query de connexion
 
     cursor = db.cursor()
+    curseur = db.cursor()
+
+    query = ("SELECT valeurs FROM settings")
+
     
-    sql = ("""INSERT INTO bassin1(capt_temp, capt_debit, num_bassin) VALUES (%s, %s, %s)""") # Query SQL
+    sql = ("""INSERT INTO mesure(temp, debit, id_bassin) VALUES (%s, %s, %s)""") # Query SQL
     data = (temperature, debit, slave_addr)
     print "Query ok"
     try:
         cursor.execute(sql, data) # Execution de la query
         print "Connexion à la db"
+
+        curseur.execute(query) 
+        row = curseur.fetchone() # Resultat de la query 
+        valeur = row[0] # Affichage de la première valeur du tableau
+
         db.commit() 
         print "Envoi"
 
@@ -44,7 +49,8 @@ while True:
         print "Erreur"
 
     db.close() # Fermeture de la connexion avec la base de donnees
+    print "sleep: ",valeur
     print "Déconnexion de la db"
     print "--------------------"
     print "                    "
-    time.sleep(10)
+    time.sleep(valeur-9)
