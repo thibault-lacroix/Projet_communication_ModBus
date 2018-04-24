@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # coding: utf-8
 import MySQLdb
-import cgi, cgitb
+import cgi
 
 print "Content-type: text/html; charset=UTF-8\n\n"
 print
 
-print'<html><head><title>PAGE TEST</title></head>'
+print'<html><head><title>PAGE TEST</title></head><body>'
 
 
 db = MySQLdb.connect("127.0.0.1","root","btsir123","ormeaux")
