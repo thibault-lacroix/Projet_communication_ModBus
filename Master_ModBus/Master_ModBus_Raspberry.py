@@ -1,24 +1,18 @@
 #!/usr/bin/env python
-# coding: utf-8
+# -*- coding: ISO-8859-1 -*-
+
 import minimalmodbus
 import MySQLdb
 import time
+from settings import *
 
-minimalmodbus.BAUDRATE = 19200 # Initialisation du baudrate
-minimalmodbus.TIMEOUT = 60
-slave_addr = 1
-
-instrument = minimalmodbus.Instrument('/dev/ttyUSB0', slave_addr) # Nom du port, adresse de l'esclave
 
 while True:
 
     print "Adresse de l'esclave: ", slave_addr
-    
-    temperature = instrument.read_register(1, 2) # Donnée dans le tableau, nombre de décimales
+    time.sleep(1)
     print "Température: ", temperature,"°C"
     time.sleep(1)
-    
-    debit = instrument.read_register(0, 0)
     print "Débit: ", debit
     time.sleep(1)
 
@@ -26,12 +20,14 @@ while True:
 
     cursor = db.cursor()
     curseur = db.cursor()
+    idcurs = db.cursor()
 
     query = ("SELECT valeurs FROM settings")
-
     
     sql = ("""INSERT INTO mesure(temp, debit, id_bassin) VALUES (%s, %s, %s)""") # Query SQL
     data = (temperature, debit, slave_addr)
+    iD = ("SELECT id_mesure FROM mesure WHERE id_bassin=1 ORDER BY datetime DESC LIMIT 1")
+
     print "Query ok"
     try:
         cursor.execute(sql, data) # Execution de la query
@@ -41,6 +37,10 @@ while True:
         row = curseur.fetchone() # Resultat de la query 
         valeur = row[0] # Affichage de la première valeur du tableau
 
+        idcurs.execute(iD)
+        val = idcurs.fetchone()
+        id_mes = val[0]        
+
         db.commit() 
         print "Envoi"
 
@@ -49,8 +49,9 @@ while True:
         print "Erreur"
 
     db.close() # Fermeture de la connexion avec la base de donnees
+    print "ID", id_mes+1
     print "sleep: ",valeur
     print "Déconnexion de la db"
     print "--------------------"
     print "                    "
-    time.sleep(valeur-9)
+    time.sleep(valeur)
