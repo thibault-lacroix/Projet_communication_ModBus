@@ -16,6 +16,65 @@ enum DS18B20_RCODES {
 OneWire ds(BROCHE_ONEWIRE);
 
 /**
+    Modbus object declaration
+    u8id : node id = 0 for master, = 1..247 for slave
+    u8serno : serial port (use 0 for Serial)
+    u8txenpin : 0 for RS-232 and USB-FTDI
+                 or any pin number > 1 for RS-485
+*/
+Modbus slave(1, 1, 5); // this is slave @1 and RS-232 or USB-FTDI
+Modbus master(0,1,5);
+const int vanne = 8; //broche
+const int tpsvanne = 5000;
+
+
+volatile int NbTopsFan; //measuring the rising edges of the signal
+int Calc;
+int hallsensor = 2; //The pin location of the sensor
+
+int8_t state = 0;
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println("Démarrage du programme");
+  slave.begin(19200); // baud-rate at 19200
+  pinMode(hallsensor, INPUT); //initializes digital pin 2 as an input
+  attachInterrupt(0, rpm, RISING); //and the interrupt is attached
+  pinMode(vanne, OUTPUT); //la vanne en sortie
+}
+
+void loop() {
+  /*digitalWrite(vanne, HIGH);
+  delay(tpsvanne);
+  digitalWrite(vanne, LOW);
+  delay(tpsvanne);*/
+  float temperature;
+  /* Lit la température ambiante à ~1Hz */
+  if (getTemperature(&temperature, true) != READ_OK) {
+    Serial.println("erreur de lecture de température");
+    return;
+  }
+  temperature = temperature * 100; //envoyer 4 chiffres au lieu de deux dans un int
+  Serial.print("Température:");
+  Serial.println(temperature);
+
+  NbTopsFan = 500; //Set NbTops to 0 ready for calculations
+  //sei(); //Enables interrupts
+  //cli(); //Disable interrupts
+  Calc = (NbTopsFan * 60 / 7.5); //(Pulse frequency x 60) / 7.5Q, = flow rate
+  Serial.print("Débit");
+  Serial.println(Calc);
+  
+
+  uint16_t au16data[2] = {Calc, temperature};
+  state = slave.poll( au16data, 2 );
+  Serial.print("state : ");
+  Serial.println(state);
+  
+  delay (1000); //Wait 1 second
+}
+
+/**
    Fonction de lecture de la température via un capteur DS18B20.
 */
 byte getTemperature(float *temperature, byte reset_search) {
@@ -71,53 +130,8 @@ byte getTemperature(float *temperature, byte reset_search) {
   return READ_OK;
 }
 
-volatile int NbTopsFan; //measuring the rising edges of the signal
-int Calc;
-int hallsensor = 2; //The pin location of the sensor
-
 void rpm () //This is the function that the interupt calls
 {
   NbTopsFan++; //This function measures the rising and falling edge of the
 
-}
-
-/**
-    Modbus object declaration
-    u8id : node id = 0 for master, = 1..247 for slave
-    u8serno : serial port (use 0 for Serial)
-    u8txenpin : 0 for RS-232 and USB-FTDI
-                 or any pin number > 1 for RS-485
-*/
-Modbus slave(1, 1, 5); // this is slave @1 and RS-232 or USB-FTDI
-const int vanne = 8; //broche
-const int tpsvanne = 5000;
-
-void setup() {
-  slave.begin(19200); // baud-rate at 19200
-  pinMode(hallsensor, INPUT); //initializes digital pin 2 as an input
-  attachInterrupt(0, rpm, RISING); //and the interrupt is attached
-  pinMode(vanne, OUTPUT); //la vanne en sortie
-}
-
-void loop() {
-  /*digitalWrite(vanne, HIGH);
-  delay(tpsvanne);
-  digitalWrite(vanne, LOW);
-  delay(tpsvanne);*/
-  float temperature;
-  /* Lit la température ambiante à ~1Hz */
-  if (getTemperature(&temperature, true) != READ_OK) {
-    return;
-  }
-  temperature = temperature * 100; //envoyer 4 chiffres au lieu de deux dans un int
-
-  NbTopsFan = 0; //Set NbTops to 0 ready for calculations
-  //sei(); //Enables interrupts
-  delay (1000); //Wait 1 second
-  //cli(); //Disable interrupts
-  Calc = (NbTopsFan * 60 / 7.5); //(Pulse frequency x 60) / 7.5Q, = flow rate
-
-  uint16_t au16data[2] = {Calc, temperature};
-
-  slave.poll( au16data, 2 );
 }
