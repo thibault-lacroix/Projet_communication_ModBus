@@ -79,6 +79,9 @@ void loop() {
   {
     Serial.print ("Erreur electrovanne"); 
   }
+
+  Serial.print("valeur de debit: ");
+  Serial.println(holdingRegs[DEBIT_STATE]);
   
   /*digitalWrite(vanne, HIGH);
   delay(tpsvanne);
