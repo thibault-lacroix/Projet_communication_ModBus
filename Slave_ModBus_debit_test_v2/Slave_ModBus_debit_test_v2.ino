@@ -58,8 +58,9 @@ void loop() {
   Serial.print("Température:");
   Serial.println(temperature);
 
-  NbTopsFan = 500; //Set NbTops to 0 ready for calculations
+  NbTopsFan = 0; //Set NbTops to 0 ready for calculations
   //sei(); //Enables interrupts
+  delay (1000); //Wait 1 second
   //cli(); //Disable interrupts
   Calc = (NbTopsFan * 60 / 7.5); //(Pulse frequency x 60) / 7.5Q, = flow rate
   Serial.print("Débit");
@@ -71,7 +72,7 @@ void loop() {
   Serial.print("state : ");
   Serial.println(state);
   
-  delay (1000); //Wait 1 second
+  //delay (1000); //Wait 1 second
 }
 
 /**
