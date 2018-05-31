@@ -1,4 +1,4 @@
-#include <ModbusRtu.h>
+#include <SimpleModbusSlave.h>
 #include <OneWire.h>
 
 
@@ -12,43 +12,78 @@ enum DS18B20_RCODES {
   INVALID_ADDRESS,  // Adresse reçue invalide
   INVALID_SENSOR  // Capteur invalide (pas un DS18B20)
 };
+
+//////////////// registers of your slave ///////////////////
+enum 
+{     
+  // just add or remove registers and your good to go...
+  // The first register starts at address 0
+  DEBIT,  
+  TEMP,
+  VANNE_STATE,
+  DEBIT_STATE,
+  TOTAL_ERRORS,
+  // leave this one
+  TOTAL_REGS_SIZE 
+  // total number of registers for function 3 and 16 share the same register array
+};
+
+unsigned int holdingRegs[TOTAL_REGS_SIZE]; // function 3 and 16 register array
+////////////////////////////////////////////////////////////
+
+
 /* Création de l'objet OneWire pour manipuler le bus 1-Wire */
 OneWire ds(BROCHE_ONEWIRE);
 
-/**
-    Modbus object declaration
-    u8id : node id = 0 for master, = 1..247 for slave
-    u8serno : serial port (use 0 for Serial)
-    u8txenpin : 0 for RS-232 and USB-FTDI
-                 or any pin number > 1 for RS-485
-*/
-Modbus slave(1, 1, 5); // this is slave @1 and RS-232 or USB-FTDI
-Modbus master(0,1,5);
-const int vanne = 8; //broche
+const int vanne = 8; //broche electrovanne
 const int tpsvanne = 5000;
-
 
 volatile int NbTopsFan; //measuring the rising edges of the signal
 int Calc;
-int hallsensor = 2; //The pin location of the sensor
-
-int8_t state = 0;
+int hallsensor = 2; //capteur debit
+float temperature;
 
 void setup() {
+  modbus_configure(19200, 1, 5, TOTAL_REGS_SIZE, 0);
+  pinMode(vanne, OUTPUT);//la vanne en sortie
+  pinMode(hallsensor, INPUT);//debit
+  pinMode(temperature, INPUT);//temperature
+
+    
   Serial.begin(9600);
   Serial.println("Démarrage du programme");
-  slave.begin(19200); // baud-rate at 19200
-  pinMode(hallsensor, INPUT); //initializes digital pin 2 as an input
   attachInterrupt(0, rpm, RISING); //and the interrupt is attached
-  pinMode(vanne, OUTPUT); //la vanne en sortie
 }
 
 void loop() {
+  // modbus_update() is the only method used in loop(). It returns the total error
+  // count since the slave started. You don't have to use it but it's useful
+  // for fault finding by the modbus master.
+  holdingRegs[TOTAL_ERRORS] = modbus_update(holdingRegs);
+  Serial.print("Erreurs : ");
+  Serial.println( holdingRegs[TOTAL_ERRORS]);
+  Serial.print("Electro State : ");
+  Serial.println( holdingRegs[VANNE_STATE]);
+
+  if (holdingRegs[VANNE_STATE]==1)
+  {
+    Serial.println("Electrovanne en marche");
+    //digitalWrite(vanne, HIGH);
+  }
+  else if (holdingRegs[VANNE_STATE]==0)
+  {
+    Serial.println("Electrovanne a l'arret");
+    //digitalWrite(vanne, LOW);
+  }
+  else
+  {
+    Serial.print ("Erreur electrovanne"); 
+  }
+  
   /*digitalWrite(vanne, HIGH);
   delay(tpsvanne);
   digitalWrite(vanne, LOW);
   delay(tpsvanne);*/
-  float temperature;
   /* Lit la température ambiante à ~1Hz */
   if (getTemperature(&temperature, true) != READ_OK) {
     Serial.println("erreur de lecture de température");
@@ -60,19 +95,15 @@ void loop() {
 
   NbTopsFan = 0; //Set NbTops to 0 ready for calculations
   //sei(); //Enables interrupts
-  delay (1000); //Wait 1 second
+    delay (1000); //Wait 1 second
   //cli(); //Disable interrupts
   Calc = (NbTopsFan * 60 / 7.5); //(Pulse frequency x 60) / 7.5Q, = flow rate
-  Serial.print("Débit");
+  Serial.print("Débit: ");
   Serial.println(Calc);
   
-
-  uint16_t au16data[2] = {Calc, temperature};
-  state = slave.poll( au16data, 2 );
-  Serial.print("state : ");
-  Serial.println(state);
-  
-  //delay (1000); //Wait 1 second
+   holdingRegs[DEBIT]=Calc;
+   holdingRegs[TEMP]=temperature;   
+  //uint16_t au16data[2] = {Calc, temperature};
 }
 
 /**
