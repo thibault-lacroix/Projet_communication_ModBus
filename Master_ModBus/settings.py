@@ -3,7 +3,6 @@
 
 import minimalmodbus
 
-
 minimalmodbus.BAUDRATE = 19200
-minimalmodbus.TIMEOUT = 3
+minimalmodbus.TIMEOUT = 10
 slave_addr = 1

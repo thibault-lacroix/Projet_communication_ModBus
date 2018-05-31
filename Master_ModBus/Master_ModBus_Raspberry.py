@@ -10,22 +10,24 @@ import sys
 REG_DEBIT = 0
 REG_TEMP = 1
 REG_VANNE_STATE = 2
+REG_DEBIT_STATE = 3
 
+val_electro=1
+val_debit=20
 
-if sys.argv[1] :
-    print "erreur il manque le debit"
-    exit
+#if sys.argv[1] :
+#    print "erreur il manque le debit"
+#    exit
     
-else:
-    val_debit=int(sys.argv[1])
+#else:
+#    val_electro=int(sys.argv[1])
 
-print val_debit
 
 print "Adresse de l'esclave: ", slave_addr
 
 instrument = minimalmodbus.Instrument('/dev/ttyUSB0', slave_addr,mode='rtu')
-while True:
 
+while True:
 
     debit=instrument.read_register(REG_DEBIT, 0)
     print "1.Débit: ", debit
@@ -33,47 +35,43 @@ while True:
     temperature=instrument.read_register(REG_TEMP, 2)
     print "2.Température: ", temperature,"°C"
 
-    val_debit = val_debit + 1
-    instrument.write_register(REG_VANNE_STATE, val_debit)
-    print "3.Controle de l'electrovanne: ", val_debit,"L/min"
+    #val_electro = val_electro + 1
+    instrument.write_register(REG_VANNE_STATE, val_electro)
+    print "3.Etat de l'electrovanne:", val_electro
+
+    instrument.write_register(REG_DEBIT_STATE, val_debit)
+    print "4.Valeur du debit: ", val_debit
+
+
+    db = MySQLdb.connect("localhost","root","btsir123","ormeaux") # Query de connexion
+
+    cursor = db.cursor()
+    cursDebBass = db.cursor()
     
+    queryInsertMes = ("""INSERT INTO mesure(temp, debit, id_bassin) VALUES (%s, %s, %s)""") # Query SQL
+    data = (temperature, debit, slave_addr)
 
-    # db = MySQLdb.connect("localhost","root","btsir123","ormeaux") # Query de connexion
+    debitBassin = ("""SELECT debitentre FROM controldeb WHERE id_bassin=?""")
 
-    # cursor = db.cursor()
-    # curseur = db.cursor()
-    # idcurs = db.cursor()
+    print "Query ok"
 
-    # query = ("SELECT valeurs FROM settings")
-    
-    # sql = ("""INSERT INTO mesure(temp, debit, id_bassin) VALUES (%s, %s, %s)""") # Query SQL
-    # data = (temperature, debit, slave_addr)
-    # iD = ("SELECT id_mesure FROM mesure WHERE id_bassin=1 ORDER BY datetime DESC LIMIT 1")
+    try:
+        cursor.execute(queryInsertMes, data) # Execution de la query
 
-    # print "Query ok"
-    # try:
-    #     cursor.execute(sql, data) # Execution de la query
-    #     print "Connexion à la db"
+        cursDebBass.execute("""SELECT debitentre FROM controldeb WHERE id_bassin=(%s)""", (slave_addr,))
 
-    #     curseur.execute(query) 
-    #     row = curseur.fetchone() # Resultat de la query 
-    #     valeur = row[0] # Affichage de la première valeur du tableau
+        controlDeb = cursDebBass.fetchone()
+        valControlDeb = controlDeb[0]
+        print "Connexion à la db"
+        db.commit() 
+        print "Envoi"
 
-    #     idcurs.execute(iD)
-    #     val = idcurs.fetchone()
-    #     id_mes = val[0]        
+    except:
+        db.rollback() # En cas d'erreur
+        print "Erreur"
 
-    #     db.commit() 
-    #     print "Envoi"
-
-    # except:
-    #     db.rollback() # En cas d'erreur
-    #     print "Erreur"
-
-    # db.close() # Fermeture de la connexion avec la base de donnees
-    # print "ID", id_mes
-    # print "sleep: ",valeur
-    # print "Déconnexion de la db"
-    # print "--------------------"
-    # print "                    "
-    # time.sleep(valeur-3)
+    db.close() # Fermeture de la connexion avec la base de donnees
+    print "control debit: ", valControlDeb
+    print "Déconnexion de la db"
+    print "--------------------"
+    print "                    "
