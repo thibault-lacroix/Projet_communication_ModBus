@@ -1,5 +1,6 @@
 #   PROJET ORMEAUZEN
 
+###################################################################################################################################
 # ModBus RS 485
 Permet la communication ModBus entre deux module RS 485, un Max485 du côté Arduino Mega, et un module UNITEK Y-1082 USB RS485 RS422 
 du côté Raspberry pi 3b.
@@ -17,15 +18,6 @@ Ces données sont stockées dans des variables (DEBIT,TEMP). Celles-ci sont envo
 La reception des données des requêtes d'écriture stocke les valeurs reçues dans des variables d'état (VANNE_STATE,DEBIT_STATE).
 
 
-
-
-
-
-
-
-
-
-
-
-PROJET DE BTS SN IR 2eme ANNÉE
+###################################################################################################################################
+PROJET DE BTS SN IR 2eme ANNÉE 2018
 LA CROIX ROUGE LA SALLE BREST
