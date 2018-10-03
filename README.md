@@ -20,6 +20,3 @@ La reception des données des requêtes d'écriture stocke les valeurs reçues d
 
 
 #############################################################################################
-
-PROJET DE BTS SN IR 2eme ANNÉE 2018
-LA CROIX ROUGE LA SALLE BREST
